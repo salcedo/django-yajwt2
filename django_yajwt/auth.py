@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 
 import jwt
@@ -20,11 +21,14 @@ class JWTAuthentication:
 
         self.UserModel = get_user_model()
 
-    def get_access_token(self, user_id):
-        return self.encode_jwt({'sub': user_id})
+    def get_tokens_response(self, user_id) -> JsonResponse:
+        access_token = self.encode_jwt({'sub': user_id})
+        # refresh_token = self.encode_jwt({'sub': user_id}, audience='refresh')
 
-    def get_refresh_token(self, user_id):
-        return self.encode_jwt({'sub': user_id}, audience='refresh')
+        response = JsonResponse({'access_token': access_token})
+        # response.set_cookie()
+
+        return response
 
     def get_user(self, user_id):
         return self.UserModel.objects.get(pk=user_id)

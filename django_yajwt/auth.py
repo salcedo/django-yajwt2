@@ -43,6 +43,8 @@ class JWTAuthentication:
         self.cookie['expires'] = datetime.utcnow()
         if self.cookie_expires is not None:
             self.cookie['expires'] += self.cookie_expires
+        else:
+            self.cookie['expires'] += self.refresh_lifetime
 
         response.set_cookie(value=refresh_token, **self.cookie)
 

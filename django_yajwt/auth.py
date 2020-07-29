@@ -10,12 +10,10 @@ import jwt
 
 class JWTAuthentication:
     def __init__(self):
-        assert 'YAJWT' in settings, 'yajwt Not configured. See documentation.'
-        assert isinstance(settings['YAJWT'], dict), \
-               'YAJWT settings must be type dict'
+        assert settings.YAJWT, 'yajwt Not configured. See documentation.'
 
-        yajwt = settings['YAJWT']
-        assert 'SECRET_KEY' in yajwt['YAJWT'], 'Missing SECRET_KEY'
+        yajwt = settings.YAJWT
+        assert 'SECRET_KEY' in yajwt, 'Missing SECRET_KEY'
         assert 'COOKIE_DOMAIN' in yajwt, 'Missing COOKIE_DOMAIN'
 
         self.key = yajwt['SECRET_KEY']

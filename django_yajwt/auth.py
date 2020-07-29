@@ -73,7 +73,8 @@ class JWTAuthentication:
         payload['iat'] = self._epoch()
         payload['exp'] = self._epoch(expires)
 
-        return jwt.encode(payload, self.key, algorithm=self.algorithm)
+        return jwt.encode(
+            payload, self.key, algorithm=self.algorithm).decode('utf-8')
 
     def decode_jwt(self, token, audience='access'):
         return jwt.decode(

@@ -26,7 +26,7 @@ class JWTAuthenticationMiddleware:
             token = authorization.split(self.jwt_auth.token_prefix)[1]
             payload = self.jwt_auth.decode_jwt(token)
             user = self.jwt_auth.get_user(payload['sub'])
-        except (IndexError, PyJWTError) as e:
+        except (IndexError, KeyError, ValueError, PyJWTError) as e:
             logger.debug(e)
 
         request.user = user if user else AnonymousUser

@@ -1,8 +1,13 @@
+import logging
+
 from django.contrib.auth.models import AnonymousUser
 
 from django_yajwt.auth import JWTAuthentication
 
 from jwt import PyJWTError
+
+
+logger = logging.getLogger(__name__)
 
 
 class JWTAuthenticationMiddleware:
@@ -21,8 +26,8 @@ class JWTAuthenticationMiddleware:
             token = authorization.split(self.jwt_auth.token_prefix)[1]
             payload = self.jwt_auth.decode_jwt(token)
             user = self.jwt_auth.get_user(payload['sub'])
-        except (IndexError, PyJWTError):
-            raise
+        except (IndexError, PyJWTError) as e:
+            logger.debug(e)
 
         request.user = user if user else AnonymousUser
         response = self.get_response(request)

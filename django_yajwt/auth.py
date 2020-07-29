@@ -10,8 +10,6 @@ import jwt
 
 class JWTAuthentication:
     def __init__(self):
-        assert settings.YAJWT, 'yajwt Not configured. See documentation.'
-
         yajwt = settings.YAJWT
         assert 'SECRET_KEY' in yajwt, 'Missing SECRET_KEY'
         assert 'COOKIE_DOMAIN' in yajwt, 'Missing COOKIE_DOMAIN'

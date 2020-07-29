@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+from django.conf import settings
+
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 
@@ -7,29 +9,34 @@ import jwt
 
 
 class JWTAuthentication:
-    def __init__(self, settings):
-        assert 'SECRET_KEY' in settings, 'Missing SECRET_KEY'
-        assert 'COOKIE_DOMAIN' in settings, 'Missing COOKIE_DOMAIN'
+    def __init__(self):
+        assert 'YAJWT' in settings, 'yajwt Not configured. See documentation.'
+        assert isinstance(settings['YAJWT'], dict), \
+               'YAJWT settings must be type dict'
 
-        self.key = settings['SECRET_KEY']
-        self.token_prefix = settings.get('TOKEN_PREFIX', 'Bearer') + ' '
-        self.cookie_expires = settings.get('COOKIE_EXPIRES', None)
+        yajwt = settings['YAJWT']
+        assert 'SECRET_KEY' in yajwt['YAJWT'], 'Missing SECRET_KEY'
+        assert 'COOKIE_DOMAIN' in yajwt, 'Missing COOKIE_DOMAIN'
+
+        self.key = yajwt['SECRET_KEY']
+        self.token_prefix = yajwt.get('TOKEN_PREFIX', 'Bearer') + ' '
+        self.cookie_expires = yajwt.get('COOKIE_EXPIRES', None)
 
         self.cookie = {
-            'key': settings.get('COOKIE_NAME', 'refreshtoken'),
-            'path': settings.get('COOKIE_PATH', '/'),
-            'domain': settings['COOKIE_DOMAIN'],
-            'secure': settings.get('COOKIE_SECURE', True),
+            'key': yajwt.get('COOKIE_NAME', 'refreshtoken'),
+            'path': yajwt.get('COOKIE_PATH', '/'),
+            'domain': yajwt['COOKIE_DOMAIN'],
+            'secure': yajwt.get('COOKIE_SECURE', True),
             'httponly': True,
-            'samesite': settings.get('COOKIE_SAMESITE', 'Strict'),
+            'samesite': yajwt.get('COOKIE_SAMESITE', 'Strict'),
             # expires will be updated before each cookie is set
             'expires': datetime.utcnow()
         }
 
-        self.algorithm = settings.get('ALGORITHM', 'HS256')
-        self.access_lifetime = settings.get(
+        self.algorithm = yajwt.get('ALGORITHM', 'HS256')
+        self.access_lifetime = yajwt.get(
             'ACCESS_LIFETIME', timedelta(minutes=15))
-        self.refresh_lifetime = settings.get(
+        self.refresh_lifetime = yajwt.get(
             'REFRESH_LIFETIME', timedelta(hours=24))
 
         self.UserModel = get_user_model()

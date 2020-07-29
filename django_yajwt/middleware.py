@@ -1,4 +1,3 @@
-from django.conf.settings import YAJWT
 from django.contrib.auth.models import AnonymousUser
 
 from django_yajwt.auth import JWTAuthentication
@@ -9,7 +8,7 @@ from jwt import PyJWTError
 class JWTAuthenticationMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        self.jwt_auth = JWTAuthentication(settings=YAJWT)
+        self.jwt_auth = JWTAuthentication()
 
     def __call__(self, request):
         try:

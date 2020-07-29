@@ -2,8 +2,6 @@ import json
 
 from http import HTTPStatus
 
-from django.conf.settings import YAJWT
-
 from django.http import HttpResponse
 from django.views import View
 
@@ -31,7 +29,7 @@ class JWTAuthenticationTokenView(View):
         if user is not None:
             login(request, user)
 
-            jwt_auth = JWTAuthentication(settings=YAJWT)
+            jwt_auth = JWTAuthentication()
             return jwt_auth.tokens_response(user.id)
         else:
             return HttpResponse(status=HTTPStatus.UNAUTHORIZED)
@@ -39,7 +37,7 @@ class JWTAuthenticationTokenView(View):
 
 class JWTAuthenticationRefreshView(View):
     def get(self, request):
-        jwt_auth = JWTAuthentication(settings=YAJWT)
+        jwt_auth = JWTAuthentication()
 
         token = request.COOKIES.get(jwt_auth.cookie['key'], None)
         if token is None:

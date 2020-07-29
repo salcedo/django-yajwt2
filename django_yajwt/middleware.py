@@ -16,6 +16,7 @@ class JWTAuthenticationMiddleware:
         self.jwt_auth = JWTAuthentication()
 
     def __call__(self, request):
+        user = None
         try:
             authorization = request.headers.get('Authorization', None)
             if not authorization:

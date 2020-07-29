@@ -30,7 +30,7 @@ class JWTAuthenticationTokenView(View):
             login(request, user)
 
             jwt_auth = JWTAuthentication(settings=JWT_AUTH)
-            return jwt_auth.get_tokens_response(user.id)
+            return jwt_auth.tokens_response(user.id)
         else:
             return HttpResponse(status=HTTPStatus.UNAUTHORIZED)
 

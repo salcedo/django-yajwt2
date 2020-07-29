@@ -1,7 +1,7 @@
 # Django Yet Another JSON Web Token Middleware
 
 ```python
-JWT_AUTH = {
+YAJWT = {
     # Required
     'SECRET_KEY': 'muchsecretmanysecure',
     'COOKIE_DOMAIN': 'example.com',

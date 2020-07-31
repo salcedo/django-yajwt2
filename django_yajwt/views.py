@@ -15,8 +15,8 @@ from jwt import PyJWTError
 from django_yajwt.auth import JWTAuthentication
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class JWTAuthenticationTokenView(View):
-    @method_decorator(csrf_exempt)
     def post(self, request):
         try:
             body = json.loads(request.body.decode('utf-8'))

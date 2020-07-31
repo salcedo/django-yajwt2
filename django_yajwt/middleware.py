@@ -18,6 +18,8 @@ class JWTAuthenticationMiddleware:
     def __call__(self, request):
         print('__call__')
         if request.user.is_authenticated:
+            print('user is authenticated')
+            print(request.user)
             return self.get_response(request)
 
         user = None

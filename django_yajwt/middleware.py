@@ -16,10 +16,7 @@ class JWTAuthenticationMiddleware:
         self.jwt_auth = JWTAuthentication()
 
     def __call__(self, request):
-        print('__call__')
         if request.user.is_authenticated:
-            print('user is authenticated')
-            print(request.user)
             return self.get_response(request)
 
         user = None
@@ -35,9 +32,9 @@ class JWTAuthenticationMiddleware:
             user = self.jwt_auth.get_user(payload['sub'])
             print('user is good')
         except (IndexError, KeyError, ValueError, PyJWTError) as e:
-            print(e)
-            logger.debug(e)
+            logger.debug('token missing or invalid')
 
-        request.user = user if user else AnonymousUser
+        if user is not None:
+            request.user = user
 
         return self.get_response(request)

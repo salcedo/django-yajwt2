@@ -12,17 +12,11 @@ try:
 
     class JWTAuthenticationDRF(BaseAuthentication):
         def authenticate(self, request):
-            if request.user.is_authenticated:
-                return (request.user, None)
-
             user = validate_authorization_token(request)
             if user is None:
-                if AuthenticationFailed is not None:
-                    raise AuthenticationFailed(_('Authentication failed'))
-                else:
-                    raise
-
-            return (user, None)
+                raise AuthenticationFailed('Authentication failed')
+            else:
+                return (user, None)
 
         def authenticate_header(self, request):
             return jwt_auth.token_prefix

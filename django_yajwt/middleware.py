@@ -3,6 +3,9 @@ from django_yajwt.auth import JWTAuthentication
 from jwt import PyJWTError
 
 
+jwt_auth = JWTAuthentication()
+
+
 try:
     from rest_framework.authentication import BaseAuthentication
     from rest_framework.exceptions import AuthenticationFailed
@@ -22,9 +25,7 @@ try:
             return (user, None)
 
         def authenticate_header(self, request):
-            jwt_auth = JWTAuthentication()
             return jwt_auth.token_prefix
-
 except ImportError:
     pass
 
@@ -32,7 +33,6 @@ except ImportError:
 class JWTAuthenticationMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        self.jwt_auth = JWTAuthentication()
 
     def __call__(self, request):
         if request.user.is_authenticated:
@@ -44,22 +44,19 @@ class JWTAuthenticationMiddleware:
 
         return self.get_response(request)
 
-    def authenticate_header(self, request):
-        return self.jwt_auth.token_prefix
 
-
-def validate_authorization_token(self, request):
+def validate_authorization_token(request):
     user = None
     try:
         authorization = request.headers.get('Authorization', None)
         if authorization is None:
             return None
-        if not authorization.startswith(self.jwt_auth.token_prefix):
+        if not authorization.startswith(jwt_auth.token_prefix):
             return None
 
-        token = authorization.split(self.jwt_auth.token_prefix)[1]
-        payload = self.jwt_auth.decode_jwt(token)
-        user = self.jwt_auth.get_user(payload['sub'])
+        token = authorization.split(jwt_auth.token_prefix)[1]
+        payload = jwt_auth.decode_jwt(token)
+        user = jwt_auth.get_user(payload['sub'])
     except (IndexError, KeyError, PyJWTError):
         return None
 

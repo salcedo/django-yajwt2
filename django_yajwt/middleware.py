@@ -4,13 +4,33 @@ from jwt import PyJWTError
 
 
 try:
+    from rest_framework.authentication import BaseAuthentication
     from rest_framework.exceptions import AuthenticationFailed
+
+    class JWTAuthenticationDRF(BaseAuthentication):
+        def authenticate(self, request):
+            if request.user.is_authenticated:
+                return (request.user, None)
+
+            user = validate_authorization_token(request)
+            if user is None:
+                if AuthenticationFailed is not None:
+                    raise AuthenticationFailed(_('Authentication failed'))
+                else:
+                    raise
+
+            return (user, None)
+
+        def authenticate_header(self, request):
+            jwt_auth = JWTAuthentication()
+            return jwt_auth.token_prefix
+
 except ImportError:
-    AuthenticationFailed = None
+    pass
 
 
 class JWTAuthenticationMiddleware:
-    def __init__(self, get_response=None):
+    def __init__(self, get_response):
         self.get_response = get_response
         self.jwt_auth = JWTAuthentication()
 
@@ -18,41 +38,29 @@ class JWTAuthenticationMiddleware:
         if request.user.is_authenticated:
             return self.get_response(request)
 
-        user = self._validate_authorization_token(request)
+        user = validate_authorization_token(request)
         if user is not None:
             request.user = user
 
         return self.get_response(request)
 
-    def authenticate(self, request):
-        if request.user.is_authenticated:
-            return (request.user, None)
-
-        user = self._validate_authorization_token(request)
-        if user is None:
-            if AuthenticationFailed is not None:
-                raise AuthenticationFailed(_('Authentication failed'))
-            else:
-                raise
-
-        return (user, None)
-
     def authenticate_header(self, request):
         return self.jwt_auth.token_prefix
 
-    def _validate_authorization_token(self, request):
-        user = None
-        try:
-            authorization = request.headers.get('Authorization', None)
-            if authorization is None:
-                return None
-            if not authorization.startswith(self.jwt_auth.token_prefix):
-                return None
 
-            token = authorization.split(self.jwt_auth.token_prefix)[1]
-            payload = self.jwt_auth.decode_jwt(token)
-            user = self.jwt_auth.get_user(payload['sub'])
-        except (IndexError, KeyError, PyJWTError):
+def validate_authorization_token(self, request):
+    user = None
+    try:
+        authorization = request.headers.get('Authorization', None)
+        if authorization is None:
+            return None
+        if not authorization.startswith(self.jwt_auth.token_prefix):
             return None
 
-        return user
+        token = authorization.split(self.jwt_auth.token_prefix)[1]
+        payload = self.jwt_auth.decode_jwt(token)
+        user = self.jwt_auth.get_user(payload['sub'])
+    except (IndexError, KeyError, PyJWTError):
+        return None
+
+    return user

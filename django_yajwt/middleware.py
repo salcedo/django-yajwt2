@@ -10,7 +10,7 @@ except ImportError:
 
 
 class JWTAuthenticationMiddleware:
-    def __init__(self, get_response):
+    def __init__(self, get_response=None):
         self.get_response = get_response
         self.jwt_auth = JWTAuthentication()
 

@@ -12,7 +12,7 @@ try:
 
     class JWTAuthenticationDRF(BaseAuthentication):
         def authenticate(self, request):
-            user = validate_authorization_token(request)
+            user = validate_token(request)
             if user is None:
                 raise AuthenticationFailed('Authentication failed')
             else:
@@ -21,7 +21,8 @@ try:
         def authenticate_header(self, request):
             return jwt_auth.token_prefix
 except ImportError:
-    pass
+    class AuthenticationFailed(Exception):
+        pass
 
 
 class JWTAuthenticationMiddleware:
@@ -32,14 +33,24 @@ class JWTAuthenticationMiddleware:
         if request.user.is_authenticated:
             return self.get_response(request)
 
-        user = validate_authorization_token(request)
+        user = validate_token(request)
         if user is not None:
             request.user = user
 
         return self.get_response(request)
 
+    def authenticate(self, request):
+        user = validate_token(request)
+        if user is None:
+            raise AuthenticationFailed('Authentication failed')
+        else:
+            return (user, None)
 
-def validate_authorization_token(request):
+    def authenticate_header(self, request):
+        return jwt_auth.token_prefix
+
+
+def validate_token(request):
     user = None
     try:
         authorization = request.headers.get('Authorization', None)

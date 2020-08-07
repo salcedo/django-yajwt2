@@ -35,11 +35,19 @@ class JWTAuthentication:
         self.refresh_lifetime = yajwt.get(
             'REFRESH_LIFETIME', timedelta(hours=24))
 
+        self.decode_options = yajwt.get('DECODE_OPTIONS', None)
+
         self.UserModel = get_user_model()
 
-    def tokens_response(self, user_id: int) -> JsonResponse:
-        access_token = self.encode_jwt({'sub': user_id})
-        refresh_token = self.encode_jwt({'sub': user_id}, audience='refresh')
+    def tokens_response(self, user_id: int, payload=None) -> JsonResponse:
+        if payload is not None:
+            jwt = payload
+            jwt['sub'] = user_id
+        else:
+            jwt = {'sub': user_id}
+
+        access_token = self.encode_jwt(jwt)
+        refresh_token = self.encode_jwt(jwt, audience='refresh')
 
         response = JsonResponse({'access_token': access_token})
 
@@ -77,15 +85,19 @@ class JWTAuthentication:
             payload, self.key, algorithm=self.algorithm).decode('utf-8')
 
     def decode_jwt(self, token, audience='access'):
+        if self.decode_options is not None:
+            options = self.decode_options
+        else:
+            options = {
+                'require': ['aud', 'exp', 'sub', 'iat']
+            }
+
         return jwt.decode(
             token,
             self.key,
             algorithm=self.algorithm,
             audience=audience,
-            options={
-                'require': ['aud', 'exp', 'sub', 'iat']
-            }
-        )
+            options=options)
 
     def _epoch(self, arrow=timedelta(0)):
         return int((datetime.utcnow() + arrow).timestamp())

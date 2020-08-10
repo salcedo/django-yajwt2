@@ -16,7 +16,7 @@ from django_yajwt.auth import JWTAuthentication
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class JWTAuthenticationTokenView(View):
+class JWTAuthenticationLoginView(View):
     def post(self, request):
         try:
             body = json.loads(request.body.decode('utf-8'))

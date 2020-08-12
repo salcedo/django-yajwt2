@@ -13,7 +13,7 @@ from django.contrib.auth import authenticate, login, logout
 from jwt import PyJWTError
 
 from django_yajwt.auth import JWTAuthentication
-from django_yajwt.models import TokenBlacklist
+from django_yajwt.blacklist.models import TokenBlacklist
 
 
 @method_decorator(csrf_exempt, name='dispatch')

@@ -39,12 +39,10 @@ class JWTAuthentication:
 
         self.UserModel = get_user_model()
 
-    def tokens_response(self, user_id: int, payload=None) -> JsonResponse:
-        if payload is not None:
-            jwt = payload
-            jwt['sub'] = user_id
-        else:
-            jwt = {'sub': user_id}
+    def tokens_response(self, user_id: int) -> JsonResponse:
+        jwt = {
+            'sub': user_id
+        }
 
         access_token = self.encode_jwt(jwt)
         refresh_token = self.encode_jwt(jwt, audience='refresh')

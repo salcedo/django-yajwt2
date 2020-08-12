@@ -8,11 +8,12 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 
 from jwt import PyJWTError
 
 from django_yajwt.auth import JWTAuthentication
+from django_yajwt.models import TokenBlacklist
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -33,6 +34,41 @@ class JWTAuthenticationLoginView(View):
             return jwt_auth.tokens_response(user.id)
         else:
             return HttpResponse(status=HTTPStatus.UNAUTHORIZED)
+
+
+class JWTAuthenticationLogoutView(View):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponse(status=HTTPStatus.BAD_REQUEST)
+
+        jwt_auth = JWTAuthentication()
+
+        authorization = request.headers.get('Authorization', None)
+        if authorization is None:
+            return HttpResponse(status=HTTPStatus.BAD_REQUEST)
+        if not authorization.startswith(jwt_auth.token_prefix):
+            return HttpResponse(status=HTTPStatus.BAD_REQUEST)
+
+        access_token = authorization.split(jwt_auth.token_prefix)[1]
+
+        refresh_token = request.COOKIES.get(jwt_auth.cookie['key'], None)
+        if refresh_token is None:
+            return HttpResponse(status=HTTPStatus.BAD_REQUEST)
+
+        TokenBlacklist(
+            token=access_token,
+            expires=jwt_auth.decode_jwt(
+                access_token)['exp']
+        ).save()
+        TokenBlacklist(
+            token=refresh_token,
+            expires=jwt_auth.decode_jwt(
+                refresh_token, audience='refresh')['exp']
+        ).save()
+
+        logout(request)
+
+        return HttpResponse(status=HTTPStatus.OK)
 
 
 class JWTAuthenticationRefreshView(View):

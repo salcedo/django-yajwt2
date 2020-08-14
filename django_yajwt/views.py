@@ -72,7 +72,7 @@ class JWTAuthenticationRefreshView(View):
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
         try:
-            TokenBlacklist.get(token=token)
+            TokenBlacklist.objects.get(token=token)
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
         except TokenBlacklist.DoesNotExist:
             pass

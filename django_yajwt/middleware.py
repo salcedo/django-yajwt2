@@ -2,6 +2,8 @@ from django_yajwt.auth import JWTAuthentication
 
 from jwt import PyJWTError
 
+from django_yajwt.models import TokenBlacklist
+
 
 jwt_auth = JWTAuthentication()
 
@@ -60,6 +62,13 @@ def validate_token(request):
             return None
 
         token = authorization.split(jwt_auth.token_prefix)[1]
+
+        try:
+            TokenBlacklist.objects.get(token=token)
+            return None
+        except TokenBlacklist.DoesNotExist:
+            pass
+
         payload = jwt_auth.decode_jwt(token)
         user = jwt_auth.get_user(payload['sub'])
     except (IndexError, KeyError, PyJWTError):

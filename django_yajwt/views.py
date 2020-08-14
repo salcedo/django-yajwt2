@@ -55,16 +55,8 @@ class JWTAuthenticationLogoutView(View):
         if refresh_token is None:
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
-        TokenBlacklist(
-            token=access_token,
-            expires=jwt_auth.decode_jwt(
-                access_token)['exp']
-        ).save()
-        TokenBlacklist(
-            token=refresh_token,
-            expires=jwt_auth.decode_jwt(
-                refresh_token, audience='refresh')['exp']
-        ).save()
+        jwt_auth.blacklist_token(access_token)
+        jwt_auth.blacklist_token(refresh_token, audience='refresh')
 
         logout(request)
 
@@ -78,6 +70,12 @@ class JWTAuthenticationRefreshView(View):
         token = request.COOKIES.get(jwt_auth.cookie['key'], None)
         if token is None:
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
+
+        try:
+            TokenBlacklist.get(token=token)
+            return HttpResponse(status=HTTPStatus.BAD_REQUEST)
+        except TokenBlacklist.DoesNotExist:
+            pass
 
         try:
             payload = jwt_auth.decode_jwt(token, audience='refresh')

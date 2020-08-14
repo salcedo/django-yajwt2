@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 
+import jwt
+
 from django.conf import settings
 
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 
-import jwt
+from django_yajwt.models import TokenBlacklist
 
 
 class JWTAuthentication:
@@ -96,6 +98,26 @@ class JWTAuthentication:
             algorithm=self.algorithm,
             audience=audience,
             options=options)
+
+    def blacklist_token(self, token, audience='access'):
+        TokenBlacklist(
+            token=token,
+            expires=self.decode_jwt(token, audience)['exp']
+        ).save()
+
+    def token_is_blacklisted(self, token):
+        self.delete_expired_tokens()
+
+        try:
+            TokenBlacklist.objects.get(token=token)
+            return True
+        except TokenBlacklist.DoesNotExist:
+            return False
+
+    def delete_expired_tokens(self):
+        for token in TokenBlacklist.objects.filter(
+                expires__lte=self._epoch()):
+            token.delete()
 
     def _epoch(self, arrow=timedelta(0)):
         return int((datetime.utcnow() + arrow).timestamp())

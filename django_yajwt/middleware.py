@@ -2,7 +2,7 @@ from django_yajwt.auth import JWTAuthentication
 
 from jwt import PyJWTError
 
-from django_yajwt.models import TokenBlacklist
+from django_yajwt.blacklist.models import TokenBlacklist
 
 
 jwt_auth = JWTAuthentication()

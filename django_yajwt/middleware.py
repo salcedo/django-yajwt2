@@ -9,22 +9,9 @@ jwt_auth = JWTAuthentication()
 
 
 try:
-    from rest_framework.authentication import BaseAuthentication
     from rest_framework.exceptions import AuthenticationFailed
-
-    class JWTAuthenticationDRF(BaseAuthentication):
-        def authenticate(self, request):
-            user = validate_token(request)
-            if user is None:
-                raise AuthenticationFailed('Authentication failed')
-            else:
-                return (user, None)
-
-        def authenticate_header(self, request):
-            return jwt_auth.token_prefix
 except ImportError:
-    class AuthenticationFailed(Exception):
-        pass
+    AuthenticationFailed = None
 
 
 class JWTAuthenticationMiddleware:

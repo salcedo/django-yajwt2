@@ -27,10 +27,10 @@ class JWTAuthenticationLoginView(View):
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
         user = authenticate(request, username=username, password=password)
-        if not user.is_active:
-            return HttpResponse(status=HTTPStatus.UNAUTHORIZED)
+        if user:
+            if not user.is_active:
+                return HttpResponse(status=HTTPStatus.UNAUTHORIZED)
 
-        if user is not None:
             login(request, user)
 
             jwt_auth = JWTAuthentication()

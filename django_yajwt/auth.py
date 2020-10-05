@@ -62,7 +62,11 @@ class JWTAuthentication:
         return response
 
     def get_user(self, user_id):
-        return self.UserModel.objects.get(pk=user_id)
+        user = self.UserModel.objects.get(pk=user_id)
+        if user.is_active:
+            return user
+        else:
+            return None
 
     def encode_jwt(self, payload, audience='access'):
         assert (audience == 'access' or audience == 'refresh'), \

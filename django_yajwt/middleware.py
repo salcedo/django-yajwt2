@@ -19,7 +19,7 @@ class JWTAuthenticationMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and request.user.is_active:
             return self.get_response(request)
 
         user = validate_token(request)

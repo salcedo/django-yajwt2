@@ -23,8 +23,6 @@ class JWTAuthenticationMiddleware:
             return self.get_response(request)
 
         user = validate_token(request)
-        if not user:
-            raise AuthenticationFailed('Authentication failed')
 
         request.user = user
 
@@ -60,9 +58,7 @@ def validate_token(request):
 
         payload = jwt_auth.decode_jwt(token)
         user = jwt_auth.get_user(payload['sub'])
-        if user is None:
-            raise ValueError
-    except (IndexError, KeyError, ValueError, PyJWTError):
+    except (IndexError, KeyError, PyJWTError):
         return None
 
     return user
